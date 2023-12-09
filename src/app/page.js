@@ -7,30 +7,68 @@ export default function Home() {
   const [step, setStep] = useState(1)
   const scrollContainerRef = useRef(null);
   const stepRef = useRef(null);
+  let controlScrollUp = true
+  let isWaiting = false
 
   const handleScroll = () => {
     const scrollContainer = scrollContainerRef.current;
     const stepContainer = stepRef.current;
-    const isAtBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight;
+    const isAtBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - 1 <= scrollContainer.clientHeight;
 
-    console.log(scrollContainer.scrollHeight - scrollContainer.scrollTop, scrollContainer.clientHeight)
+    const isScrollingUp = scrollContainer.scrollTop < scrollContainer.lastKnownScrollTop;
 
-    if (isAtBottom) {
-      // Buraya scroll en aşağıda olduğunda yapılacak işlemi ekleyebilirsiniz
-      console.log('Div en aşağıda!');
-      // Buraya scroll işlemlerinizi ekleyebilirsiniz
-      if(step < 5) {
-        console.log('a')
-        setStep(prevState => prevState + 1)
-        scrollContainer.scrollTop = 0;
-      }
+    if(!isWaiting) {
+// isScrollingUp durumunu kullanarak yukarı kaydırıldığını kontrol et
+    if (isScrollingUp && controlScrollUp) {
+      setStep(prevState => {
+        if(prevState > 1) {
+          return prevState - 1
+        } else {
+          return prevState
+        }
+      })
 
       stepContainer.classList.remove('step')
-      
+
+    setTimeout(() => {
+    stepContainer.classList.add('step')
+    }, [10])
+
+      isWaiting = true
+
       setTimeout(() => {
-        stepContainer.classList.add('step')
-      }, [10])
+        isWaiting = false
+      }, [500])
     }
+
+    // Her kaydırma işlemi sonrasında mevcut scrollTop değerini güncelle
+    scrollContainer.lastKnownScrollTop = scrollContainer.scrollTop;
+
+    if (isAtBottom) {
+    // Buraya scroll işlemlerinizi ekleyebilirsiniz
+    if(step < 5) {
+    setStep(prevState => prevState + 1)
+    scrollContainer.scrollTop = 10;
+    }
+
+    stepContainer.classList.remove('step')
+
+    setTimeout(() => {
+    stepContainer.classList.add('step')
+    }, [10])
+
+    isWaiting = true
+
+    setTimeout(() => {
+      isWaiting = false
+    }, [500])
+
+    controlScrollUp = false
+    } else {
+    controlScrollUp = true
+    }
+    }
+      
     
   };
 
@@ -58,8 +96,8 @@ export default function Home() {
         </div>
       </div>
       <div className='w-[95%] h-screen p-5 overflow-y-scroll' ref={scrollContainerRef}>
-        <div className='h-[170vh] w-full flex justify-center'>
-          <div className='drop-shadow-lg step bg-white h-1/2 rounded-xl w-full p-10' ref={stepRef}>
+        <div className='h-[100.1vh] w-full flex justify-center'>
+          <div className='drop-shadow-lg step bg-white h-2/3 rounded-xl w-full p-10' ref={stepRef}>
               <p className=''>Başlık</p>
             </div>
         </div>
